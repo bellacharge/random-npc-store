@@ -11,16 +11,24 @@ AddEventHandler("shop:spawnNPC", function(coords, stock, pedModel)
     shopCoords = coords
     shopStock = stock
 
+    -- Load the NPC model
     RequestModel(GetHashKey(pedModel))
     while not HasModelLoaded(GetHashKey(pedModel)) do
         Wait(10)
     end
 
-    spawnedNPC = CreatePed(GetHashKey(pedModel), coords.x, coords.y, coords.z, 0.0, false, true)
+    -- Get the ground Z position
+    local foundGround, groundZ = GetGroundZFor_3dCoord(coords.x, coords.y, coords.z, false)
+    local finalZ = foundGround and groundZ or coords.z
+
+    -- Create the NPC on the ground
+    spawnedNPC = CreatePed(GetHashKey(pedModel), coords.x, coords.y, finalZ, 0.0, false, true)
     SetEntityAsMissionEntity(spawnedNPC, true, true)
     SetPedCanRagdoll(spawnedNPC, false)
+    SetBlockingOfNonTemporaryEvents(spawnedNPC, true)
+    FreezeEntityPosition(spawnedNPC, true) -- Prevent movement
 
-    print("👤 Shop NPC spawned at:", coords.x, coords.y, coords.z)
+    print("👤 Shop NPC spawned at:", coords.x, coords.y, finalZ)
 end)
 
 RegisterNetEvent("shop:updateStock")
